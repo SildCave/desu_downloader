@@ -15,4 +15,6 @@ No installation required, just download the script and vuala
 ## usage
 #### examples
 - ```python downloader.py --link https://desu-online.pl/anime/spy-x-family/```
-- ```python downloader.py --link https://desu-online.pl/anime/spy-x-family/ --path C:\Users\xyz\Videos``` >  Use "" if your path contains spaces
+- ```python downloader.py --link https://desu-online.pl/anime/spy-x-family/ --path C:\Users\xyz\Videos``` 
+
+> Use "" if your path contains spaces
