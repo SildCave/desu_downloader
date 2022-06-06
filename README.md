@@ -13,6 +13,9 @@ Simple tool for easy downloadig series from desu-online.pl
 No installation required, just download the script and vuala
 
 ## usage
+
+The downloader will create a new folder for the episodes and then download them from cda.pl
+
 #### examples
 - ```python downloader.py --link https://desu-online.pl/anime/spy-x-family/```
 - ```python downloader.py --link https://desu-online.pl/anime/spy-x-family/ --path C:\Users\xyz\Videos``` 
