@@ -8,6 +8,7 @@ def main():
     import threading
     import platform
     import shlex
+    import gdown
     from selenium.webdriver.support.ui import Select
 
 
@@ -39,6 +40,12 @@ def main():
         install("beautifulsoup4")
         from bs4 import BeautifulSoup as BS
 
+    try:
+        import gdown
+    except ImportError:
+        install("gdown")
+        import gdown
+
     #https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
     #https://github.com/yt-dlp/yt-dlp
 
@@ -55,6 +62,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--link', type=str, required=True, help="link to anime desu")
     parser.add_argument('--path', type=str, required=False, help="path")
+    parser.add_argument('--at_once', type=int, required=False, help="path")
     args = parser.parse_args()
 
     options = uc.ChromeOptions() 
@@ -116,40 +124,58 @@ def main():
 
     threads = []
 
-    with open('log', 'w') as f:
-        f.close()
 
     def download(link, title, num):
         browser.get(episode_link)
         select = Select(browser.find_element_by_class_name('mirror'))
-        select.select_by_visible_text('CDA')
-        html_source = browser.page_source
-        soup = BS(html_source, features="html.parser")
-        iframe_link = soup.find_all('iframe')[0]['src']
-        
-        with open('log', 'a') as f:
-            f.write(f"iframe {iframe_link}\n")
-        cda_vid_num = iframe_link.split("/")[4]
-        cda_link = f"https://www.cda.pl/video/{cda_vid_num}"
-        with open('log', 'a') as f:
-            f.write(f"{cda_link}\n")
+        try:
+            select.select_by_visible_text('CDA')
+            html_source = browser.page_source
+            soup = BS(html_source, features="html.parser")
+            iframe_link = soup.find_all('iframe')[0]['src']
+
+            cda_vid_num = iframe_link.split("/")[4]
+            cda_link = f"https://www.cda.pl/video/{cda_vid_num}"
 
 
-        def download_yt_dl():
-            command = shlex.split(f""""{executable}" -o "{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.%(ext)s" {cda_link}""")
-            process = subprocess.Popen(command, shell=False)
-            process.wait()
-            sys.exit()
+            def download_yt_dl():
+                command = shlex.split(f""""{executable}" -o "{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.%(ext)s" {cda_link}""")
+                process = subprocess.Popen(command, shell=False)
+                process.wait()
+                sys.exit()
 
 
-        download_task = threading.Thread(target = download_yt_dl, args = ())
-        download_task.start()
+            download_task = threading.Thread(target = download_yt_dl, args = ())
+            download_task.start()
 
-        threads.append(download_task)
+            threads.append(download_task)
+        except:
+            try:
+                select.select_by_visible_text('GD')
+            except:
+                select.select_by_visible_text('Źródło 1')
+            
+            html_source = browser.page_source
+            soup = BS(html_source, features="html.parser")
+            iframe_code = soup.find_all('iframe')[0]['src'].split('/')[5]
 
-        
 
-    for episode in episodes:
+            def download_gd(iframe_code, title, num):              
+                out_file_path = (f"{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.mp4")
+                link = f"https://drive.google.com/uc?id={iframe_code}&export=download"
+                #print(link)
+                #print(out_file_path)
+                gdown.download(link, out_file_path, quiet = True)
+
+            download_task = threading.Thread(target = download_gd, args = (iframe_code, title, num))
+            download_task.start()
+
+            threads.append(download_task)
+    
+    if not args.at_once:
+        args.at_once = 8
+
+    for i, episode in enumerate(episodes):
 
         episode_num = episode.findAll("div")[0].contents
         episode_title = episode.findAll("div")[1].contents
@@ -157,6 +183,11 @@ def main():
 
 
         download(episode_link, episode_title, episode_num)
+        print(f"{i + 1} out of {len(episodes)}")
+        if len(threads) == args.at_once:
+            for thread in threads:
+                thread.join()
+            threads = []
 
         time.sleep(2)
 
