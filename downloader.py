@@ -66,7 +66,7 @@ def main():
     args = parser.parse_args()
 
     options = uc.ChromeOptions() 
-    options.headless = True
+    options.headless = False
 
     if platform.system() != 'Linux':
         try:
@@ -128,11 +128,19 @@ def main():
     def download(link, title, num):
         browser.get(episode_link)
         select = Select(browser.find_element_by_class_name('mirror'))
+        html_source = browser.page_source
+        soup = BS(html_source, features="html.parser")
+        iframe_link = soup.find_all('iframe')[0]['src']
+        
+        
         try:
-            select.select_by_visible_text('CDA')
-            html_source = browser.page_source
-            soup = BS(html_source, features="html.parser")
-            iframe_link = soup.find_all('iframe')[0]['src']
+            if 'cda' not in iframe_link:
+                
+                select.select_by_visible_text('CDA')
+                html_source = browser.page_source
+                soup = BS(html_source, features="html.parser")
+                iframe_link = soup.find_all('iframe')[0]['src']
+            
 
             cda_vid_num = iframe_link.split("/")[4]
             cda_link = f"https://www.cda.pl/video/{cda_vid_num}"
@@ -149,7 +157,8 @@ def main():
             download_task.start()
 
             threads.append(download_task)
-        except:
+        except Exception as e:
+            print(str(e))
             try:
                 select.select_by_visible_text('GD')
             except:
@@ -211,3 +220,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
