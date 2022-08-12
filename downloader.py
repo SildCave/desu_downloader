@@ -10,7 +10,7 @@ def main():
     import shlex
     import gdown
     from selenium.webdriver.support.ui import Select
-
+    import re
 
     def install(package):
         subprocess.check_output([sys.executable, "-m", "pip", "install", package])
@@ -66,7 +66,7 @@ def main():
     args = parser.parse_args()
 
     options = uc.ChromeOptions() 
-    options.headless = False
+    options.headless = True
 
     if platform.system() != 'Linux':
         try:
@@ -104,7 +104,10 @@ def main():
     desu_link = args.link
     browser.get(desu_link)
 
-    series_title = desu_link.split('/')[4]
+    if 'https://desu-online.pl/anime' not in desu_link:
+        series_title = desu_link.split('/')[3]
+    else:
+        series_title = desu_link.split('/')[4]
 
     html_source = browser.page_source
 
@@ -115,7 +118,7 @@ def main():
     if args.path:
         path_to_save =  f"{args.path}/{series_title}"
     else:
-        path_to_save = os.getcwd() + "/" + series_title
+        path_to_save = os.getcwd() + "/" + (re.sub(r'[\\/*?:"<>|]', "", series_title))
 
     try:
         os.mkdir(path_to_save)
