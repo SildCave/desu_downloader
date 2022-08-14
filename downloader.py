@@ -61,6 +61,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--link', type=str, required=True, help="link to anime desu")
+    parser.add_argument('--episodes', type=str, required=False, help="episodes, from, to. Example: 4-10")
     parser.add_argument('--path', type=str, required=False, help="path")
     parser.add_argument('--at_once', type=int, required=False, help="path")
     args = parser.parse_args()
@@ -114,6 +115,11 @@ def main():
 
     episodes = soup.findAll("li", {"data-index" : True})
 
+    if args.episodes:
+        episodes_to_down = tuple(range(int(args.episodes.split('-')[0]), int(args.episodes.split('-')[1]) + 1))
+    else:
+        episodes_to_down = tuple(range(0, 9000))
+
     if args.path:
         path_to_save =  f"{args.path}/{series_title}"
     else:
@@ -128,62 +134,60 @@ def main():
 
 
     def download(link, title, num):
-        browser.get(episode_link)
-        select = Select(browser.find_element_by_class_name('mirror'))
-        html_source = browser.page_source
-        soup = BS(html_source, features="html.parser")
-        iframe_link = soup.find_all('iframe')[0]['src']
-        
-        
-        try:
-            if 'cda' not in iframe_link:
-                
-                select.select_by_visible_text('CDA')
-                html_source = browser.page_source
-                soup = BS(html_source, features="html.parser")
-                iframe_link = soup.find_all('iframe')[0]['src']
-            
-
-            cda_vid_num = iframe_link.split("/")[4]
-            cda_link = f"https://www.cda.pl/video/{cda_vid_num}"
-
-
-            def download_yt_dl():
-                print(cda_link)
-                command = shlex.split(f""""{executable}" -o "{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.%(ext)s" {cda_link}""")
-                process = subprocess.Popen(command, shell=False)
-                process.wait()
-                sys.exit()
-
-
-            download_task = threading.Thread(target = download_yt_dl, args = ())
-            download_task.start()
-
-            threads.append(download_task)
-        except Exception as e:
-            print(str(e))
-            try:
-                select.select_by_visible_text('GD')
-            except:
-                select.select_by_visible_text('Źródło 1')
-            
+        if int(num[0]) in episodes_to_down:
+            browser.get(episode_link)
+            select = Select(browser.find_element_by_class_name('mirror'))
             html_source = browser.page_source
             soup = BS(html_source, features="html.parser")
-            iframe_code = soup.find_all('iframe')[0]['src'].split('/')[5]
+            iframe_link = soup.find_all('iframe')[0]['src']
 
 
-            def download_gd(iframe_code, title, num):              
-                out_file_path = (f"{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.mp4")
-                link = f"https://drive.google.com/uc?id={iframe_code}&export=download"
-                print(link)
-                print(out_file_path)
-                gdown.download(link, out_file_path, quiet = True)
+            try:
+                if 'cda' not in iframe_link:
+                    
+                    select.select_by_visible_text('CDA')
+                    html_source = browser.page_source
+                    soup = BS(html_source, features="html.parser")
+                    iframe_link = soup.find_all('iframe')[0]['src']
 
-            download_task = threading.Thread(target = download_gd, args = (iframe_code, title, num))
-            download_task.start()
 
-            threads.append(download_task)
-    
+                cda_vid_num = iframe_link.split("/")[4]
+                cda_link = f"https://www.cda.pl/video/{cda_vid_num}"
+
+
+                def download_yt_dl():
+                    command = shlex.split(f""""{executable}" -o "{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.%(ext)s" {cda_link}""")
+                    process = subprocess.Popen(command, shell=False)
+                    process.wait()
+                    sys.exit()
+
+
+                download_task = threading.Thread(target = download_yt_dl, args = ())
+                download_task.start()
+
+                threads.append(download_task)
+            except Exception as e:
+                print(str(e))
+                try:
+                    select.select_by_visible_text('GD')
+                except:
+                    select.select_by_visible_text('Źródło 1')
+
+                html_source = browser.page_source
+                soup = BS(html_source, features="html.parser")
+                iframe_code = soup.find_all('iframe')[0]['src'].split('/')[5]
+
+
+                def download_gd(iframe_code, title, num):              
+                    out_file_path = (f"{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.mp4")
+                    link = f"https://drive.google.com/uc?id={iframe_code}&export=download"
+                    gdown.download(link, out_file_path, quiet = True)
+
+                download_task = threading.Thread(target = download_gd, args = (iframe_code, title, num))
+                download_task.start()
+
+                threads.append(download_task)
+        
     if not args.at_once:
         args.at_once = 8
 
