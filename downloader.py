@@ -150,7 +150,7 @@ def main():
 
             def download_yt_dl():
                 print(cda_link)
-                command = shlex.split(f""""{executable}" -f best -o "{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.%(ext)s" {cda_link}""")
+                command = shlex.split(f""""{executable}" -o "{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.%(ext)s" {cda_link}""")
                 process = subprocess.Popen(command, shell=False)
                 process.wait()
                 sys.exit()
