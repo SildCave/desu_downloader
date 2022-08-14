@@ -92,12 +92,11 @@ def main():
 
     if platform.system() == 'Linux':
         os.system('sudo apt install python-is-python3')
-        if not os.path.exists('/usr/local/bin/youtube-dl'):
-            os.system('sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl')
-            os.system('sudo chmod a+rx /usr/local/bin/youtube-dl')
+        if True:
+            install('yt-dlp')
 
     if platform.system() == 'Linux':
-        executable = "youtube-dl"
+        executable = "yt-dlp"
     else:
         executable = "tools/yt-dlp.exe"
 
@@ -150,7 +149,8 @@ def main():
 
 
             def download_yt_dl():
-                command = shlex.split(f""""{executable}" -o "{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.%(ext)s" {cda_link}""")
+                print(cda_link)
+                command = shlex.split(f""""{executable}" -f best -o "{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.%(ext)s" {cda_link}""")
                 process = subprocess.Popen(command, shell=False)
                 process.wait()
                 sys.exit()
@@ -175,8 +175,8 @@ def main():
             def download_gd(iframe_code, title, num):              
                 out_file_path = (f"{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.mp4")
                 link = f"https://drive.google.com/uc?id={iframe_code}&export=download"
-                #print(link)
-                #print(out_file_path)
+                print(link)
+                print(out_file_path)
                 gdown.download(link, out_file_path, quiet = True)
 
             download_task = threading.Thread(target = download_gd, args = (iframe_code, title, num))
