@@ -8,8 +8,8 @@ def main():
     import threading
     import platform
     import shlex
-    import gdown
     from selenium.webdriver.support.ui import Select
+    from selenium.webdriver.common.by import By
     import re
 
     def install(package):
@@ -136,7 +136,7 @@ def main():
     def download(link, title, num):
         if int(num[0]) in episodes_to_down:
             browser.get(episode_link)
-            select = Select(browser.find_element_by_class_name('mirror'))
+            select = Select(browser.find_element(By.CLASS_NAME, "mirror"))
             html_source = browser.page_source
             soup = BS(html_source, features="html.parser")
             iframe_link = soup.find_all('iframe')[0]['src']
