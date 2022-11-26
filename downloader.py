@@ -193,7 +193,7 @@ def main():
 
     for i, episode in enumerate(episodes):
 
-        episode_num = episode.findAll("div")[0].contents
+        episode_num = [len(episodes) - i]
         episode_title = episode.findAll("div")[1].contents
         episode_link = episode.a.get('href')
 
