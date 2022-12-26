@@ -4,12 +4,9 @@ def main():
     import os
     import argparse
     import time
-    import requests
     import threading
     import platform
     import shlex
-    from selenium.webdriver.support.ui import Select
-    from selenium.webdriver.common.by import By
     import re
 
     def install(package):
@@ -35,10 +32,25 @@ def main():
 
 
     try:
+        import requests
+    except ImportError:
+        install("requests")
+        import requests
+
+    try:
+        from selenium.webdriver.support.ui import Select
+        from selenium.webdriver.common.by import By
+    except ImportError:
+        install("selenium")
+        from selenium.webdriver.support.ui import Select
+        from selenium.webdriver.common.by import By
+
+    try:
         from bs4 import BeautifulSoup as BS
     except ImportError:
         install("beautifulsoup4")
         from bs4 import BeautifulSoup as BS
+
 
     try:
         import gdown
@@ -73,7 +85,7 @@ def main():
         try:
             browser = uc.Chrome(options = options)
         except Exception as e:
-            print(f'Download Chrome {e}')
+            print(f'\n\n\nDownload Chrome, error: {e}')
             sys.exit(0)
     else:
         try:
@@ -83,7 +95,7 @@ def main():
                 os.system('sudo wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb')
                 os.system('sudo sudo dpkg -i google-chrome-stable_current_amd64.deb')
             except Exception as e:
-                print(f'Download Chrome {e}')
+                print(f'\n\n\nDownload Chrome, error: {e}')
                 sys.exit(0)
             
     if not os.path.exists("tools/yt-dlp.exe") and platform.system() != 'Linux':
