@@ -192,7 +192,7 @@ def main():
 
 
                 def download_gd(iframe_code, title, num):              
-                    out_file_path = (f"{path_to_save}/{str(int(num[0])).zfill(3)}_{title[0]}.mp4")
+                    out_file_path = (f"{path_to_save}/{str(int(num[0])).zfill(3)}.mp4")
                     link = f"https://drive.google.com/uc?id={iframe_code}&export=download"
                     gdown.download(link, out_file_path, quiet = True)
 
